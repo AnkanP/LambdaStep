@@ -1,0 +1,42 @@
+{
+    "Comment": "An example of using Athena to execute queries in sequence and parallel, with error handling and notifications.",
+    "StartAt": "StartUpLambda",
+    "States": {
+        "StartUpLambda": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$.Payload",
+            "Parameters": {
+              "FunctionName": "MyLambdaFunction"
+            },
+            "Next": "Create Raw Database"
+          },
+     
+    "Create Raw Database": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+        "Parameters": {
+          "QueryString": "create database raw",
+          "WorkGroup": "primary"
+        },
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Get Query Result"
+          }
+        ],
+            "Next": "Get Query Result"
+    },
+
+    "Get Query Result": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::athena:getQueryResults",
+            "Parameters": {
+              "QueryExecutionId.$": "$.QueryExecution.QueryExecutionId"
+            },
+            "End": true
+    }
+    }
+}  

@@ -1,0 +1,15 @@
+{
+    "Comment": "An example of the Amazon States Language for using lambda",
+    "StartAt": "Trigger Lambda",
+    "TimeoutSeconds": 3600,
+    "States": {
+      "Trigger Lambda": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "Parameters": {
+          "FunctionName": "crawlerplambda"
+        },
+        "End": true
+      }
+    }  
+  }

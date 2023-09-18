@@ -1,0 +1,57 @@
+{
+    "Comment": "A description of my state machine",
+    "StartAt": "Prepare Query",
+    "States": {
+      "Prepare Query": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.config",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "crawlerplambda"
+        },
+        "Retry": [
+          {
+            "ErrorEquals": [
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
+            ],
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
+          }
+        ],
+        "Next": "Run Athena Query",
+        "InputPath": "$.config",
+        "ResultPath": "$.config.lambdaresult"
+      },
+      "Run Athena Query": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
+        "InputPath": "$.lambdaresult",
+        "Parameters": {
+          "QueryString.$": "$.Payload.partition_sql",
+          "WorkGroup": "primary"
+        },
+        "Catch": [
+          {
+            "ErrorEquals": [
+              "States.ALL"
+            ],
+            "Next": "Get Query Result"
+          }
+        ],
+        "Next": "Get Query Result"
+      },
+      "Get Query Result": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::athena:getQueryResults",
+        "Parameters": {
+          "QueryExecutionId.$": "$.QueryExecution.QueryExecutionId"
+        },
+        "End": true
+      }
+    }
+  }
