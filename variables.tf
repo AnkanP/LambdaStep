@@ -18,6 +18,13 @@ variable "lambda_function_name" {
 }
 
 
+variable "lambda_function_name_rds" {
+  description = "default lambda function"
+  type        = string
+  default     = "crawlerplambda_rds"
+}
+
+
 variable "step_function_name" {
   description = "default step function"
   type        = string

@@ -5,7 +5,7 @@
       "Prepare Query": {
         "Type": "Task",
         "Resource": "arn:aws:states:::lambda:invoke",
-        "OutputPath": "$.config",
+        "OutputPath": "$",
         "Parameters": {
           "Payload.$": "$",
           "FunctionName": "crawlerplambda"
@@ -25,32 +25,54 @@
         ],
         "Next": "Run Athena Query",
         "InputPath": "$.config",
-        "ResultPath": "$.config.lambdaresult"
+        "ResultSelector": {
+          "body.$": "$.Payload",
+          "statuscode.$": "$.StatusCode"
+        },
+        "ResultPath": "$.lambdaresult"
       },
       "Run Athena Query": {
         "Type": "Task",
         "Resource": "arn:aws:states:::athena:startQueryExecution.sync",
-        "InputPath": "$.lambdaresult",
+        "InputPath": "$",
         "Parameters": {
-          "QueryString.$": "$.Payload.partition_sql",
+          "QueryString.$": "$.lambdaresult.body.partition_sql",
           "WorkGroup": "primary"
         },
-        "Catch": [
+        "Next": "GetQueryRuntimeStatistics",
+        "ResultPath": "$.athenaresult",
+        "OutputPath": "$"
+      },
+      "GetQueryRuntimeStatistics": {
+        "Type": "Task",
+        "Parameters": {
+          "QueryExecutionId.$": "$.athenaresult.QueryExecution.QueryExecutionId"
+        },
+        "Resource": "arn:aws:states:::aws-sdk:athena:getQueryRuntimeStatistics",
+        "Next": "Lambda Write results S3",
+        "ResultPath": "$.athenastats"
+      },
+      "Lambda Write results S3": {
+        "Type": "Task",
+        "Resource": "arn:aws:states:::lambda:invoke",
+        "OutputPath": "$.Payload",
+        "Parameters": {
+          "Payload.$": "$",
+          "FunctionName": "crawlerplambda"
+        },
+        "Retry": [
           {
             "ErrorEquals": [
-              "States.ALL"
+              "Lambda.ServiceException",
+              "Lambda.AWSLambdaException",
+              "Lambda.SdkClientException",
+              "Lambda.TooManyRequestsException"
             ],
-            "Next": "Get Query Result"
+            "IntervalSeconds": 2,
+            "MaxAttempts": 6,
+            "BackoffRate": 2
           }
         ],
-        "Next": "Get Query Result"
-      },
-      "Get Query Result": {
-        "Type": "Task",
-        "Resource": "arn:aws:states:::athena:getQueryResults",
-        "Parameters": {
-          "QueryExecutionId.$": "$.QueryExecution.QueryExecutionId"
-        },
         "End": true
       }
     }

@@ -29,7 +29,7 @@ module "lambda_function" {
   function_name = var.lambda_function_name
   description   = "My awesome lambda function"
   handler       = "lambda.lambda_handler"
-  runtime       = "python3.8"
+  runtime       = "python3.11"
 
   create                            = true
   create_role                       = false ## May be need explicit role creation with prefix local
@@ -48,6 +48,35 @@ module "lambda_function" {
 }
 
 
+
+module "lambda_function_rds" {
+  source = "terraform-aws-modules/lambda/aws"
+
+  function_name = var.lambda_function_name_rds
+  description   = "My awesome lambda function"
+  handler       = "lambda-rds.lambda_handler"
+  runtime       = "python3.11"
+
+  create                            = true
+  create_role                       = false ## May be need explicit role creation with prefix local
+  create_package                    = true
+  create_function                   = true
+  lambda_role                       = aws_iam_role.lambda_iam_role.arn
+  use_existing_cloudwatch_log_group = false
+  reserved_concurrent_executions    = -1
+
+  # package
+  artifacts_dir = "artifacts"
+  source_path   = "src/lambda-rds/"
+
+  tags       = var.tags
+  depends_on = [aws_iam_role.lambda_iam_role]
+}
+
+
+
+
+
 resource "aws_lambda_permission" "s3_permission_to_trigger_lambda" {
   statement_id  = "AllowLambdaExecutionFromS3"
   action        = "lambda:InvokeFunction"
@@ -57,6 +86,7 @@ resource "aws_lambda_permission" "s3_permission_to_trigger_lambda" {
 
 
 }
+
 
 # permission for lambda to access other services
 
@@ -87,11 +117,14 @@ data "aws_iam_policy_document" "lambda_role_policy_document" {
   }
 
   statement {
-    sid = "AllowS3Access"
-    effect = "Allow"
-    actions = ["s3:*"]
+    sid       = "AllowS3Access"
+    effect    = "Allow"
+    actions   = ["s3:*"]
     resources = ["*"]
   }
+
+
+
 
 }
 
