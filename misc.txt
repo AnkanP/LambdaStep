@@ -64,3 +64,11 @@ def lambda_handler(event, context):
     return lambdaoutput
 	
 	
+    ----------------
+
+    CREATE TABLE jobcontrol (ExecutionId INTEGER NOT NULL, JobName TEXT NOT NULL,  LastExecutionDate DATE NOT NULL,JobStatus TEXT NOT NULL, PRIMARY KEY (ExecutionId))
+
+INSERT INTO jobcontrol (executionid, jobname, lastexecutiondate, jobstatus) VALUES (1, 'JOB1', '2023-10-01','SUCCEEDED');
+INSERT INTO jobcontrol (executionid, jobname, lastexecutiondate, jobstatus) VALUES (2, 'JOB1', '2023-10-02','SUCCEEDED');
+INSERT INTO jobcontrol (executionid, jobname, lastexecutiondate, jobstatus) VALUES (3, 'JOB1', '2023-10-03','SUCCEEDED');
+INSERT INTO jobcontrol (executionid, jobname, lastexecutiondate, jobstatus) VALUES (4, 'JOB1', '2023-10-04','SUCCEEDED');
