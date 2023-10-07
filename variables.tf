@@ -7,7 +7,7 @@ variable "region" {
 variable "bucket" {
   description = "bucketname"
   type        = string
-  default     = "crawlerpbucket3"
+  default     = "crawlerpbucket5"
 }
 
 

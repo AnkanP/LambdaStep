@@ -1,0 +1,1 @@
+{"filename": "artifacts/4d2c0c9c555bdaf342cceea6cc2126989de8956cb5b1f1eb5de774ccc08b0194.zip", "runtime": "python3.8", "artifacts_dir": "artifacts", "build_plan": [["zip", "src/lambda-rds/", null]]}

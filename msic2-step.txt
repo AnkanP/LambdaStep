@@ -1,0 +1,79 @@
+{
+  "Comment": "A description of my state machine",
+  "StartAt": "Lambda Calclulate Days",
+  "States": {
+    "Lambda Calclulate Days": {
+      "Type": "Task",
+      "Resource": "arn:aws:states:::lambda:invoke",
+      "OutputPath": "$",
+      "Parameters": {
+        "Payload.$": "$",
+        "FunctionName": "crawlerplambda_rds"
+      },
+      "Retry": [
+        {
+          "ErrorEquals": [
+            "Lambda.ServiceException",
+            "Lambda.AWSLambdaException",
+            "Lambda.SdkClientException",
+            "Lambda.TooManyRequestsException"
+          ],
+          "IntervalSeconds": 2,
+          "MaxAttempts": 6,
+          "BackoffRate": 2
+        }
+      ],
+      "Next": "Map",
+      "InputPath": "$",
+      "ResultPath": "$.lambdacalcresult",
+      "ResultSelector": {
+        "partitionDaysArray.$": "$.Payload",
+        "status.$": "$.StatusCode"
+      }
+    },
+    "Map": {
+      "Type": "Map",
+      "ItemProcessor": {
+        "ProcessorConfig": {
+          "Mode": "INLINE"
+        },
+        "StartAt": "Prepare Query",
+        "States": {
+          "Prepare Query": {
+            "Type": "Task",
+            "Resource": "arn:aws:states:::lambda:invoke",
+            "OutputPath": "$",
+            "Parameters": {
+              "Payload.$": "$",
+              "FunctionName": "crawlerplambda"
+            },
+            "Retry": [
+              {
+                "ErrorEquals": [
+                  "Lambda.ServiceException",
+                  "Lambda.AWSLambdaException",
+                  "Lambda.SdkClientException",
+                  "Lambda.TooManyRequestsException"
+                ],
+                "IntervalSeconds": 2,
+                "MaxAttempts": 6,
+                "BackoffRate": 2
+              }
+            ],
+            "InputPath": "$",
+            "ResultSelector": {
+              "body.$": "$.Payload",
+              "statuscode.$": "$.StatusCode"
+            },
+            "End": true
+          }
+        }
+      },
+      "InputPath": "$",
+      "ResultPath": "$.mapresult",
+      "End": true,
+      "ItemsPath": "$.lambdacalcresult.partitionDaysArray",
+      "OutputPath": "$"
+    }
+  }
+}

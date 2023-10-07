@@ -1,0 +1,60 @@
+from datetime import date, timedelta
+import os
+import json
+# rds settings
+#user_name = os.environ['USER_NAME']
+#password = os.environ['PASSWORD']
+#rds_proxy_host = os.environ['RDS_PROXY_HOST']
+#db_name = os.environ['DB_NAME']
+
+
+
+
+
+def lambda_handler(event, context):
+    json_data_list = []
+
+
+    start_date = date(2023, 10, 1) 
+    end_date = date(2023, 10, 7)    # perhaps date.now()
+
+    delta = end_date - start_date   # returns timedelta
+
+    for i in range(delta.days + 1):
+        day = start_date + timedelta(days=i)
+      
+        x = {
+
+            "date" : day.strftime('%Y-%m-%d')
+        }
+        json_data_list.append(json.dumps(x))
+
+    print(json.dumps(json_data_list))
+
+    return json_data_list
+
+
+
+------------
+
+import json
+import boto3
+import s3module
+
+def lambda_handler(event, context):
+    #state_input = event.get("configData")
+   # BUCKET = event.get("bucket")
+   # OBJ_KEY = event.get("objkey")
+    print(event)
+    
+    #print(s3module.read_file_from_s3(BUCKET,OBJ_KEY))
+
+    lambdaoutput = {
+        "partition_sql": event['input'],
+        "merge_sql":      "merge"
+    }
+
+
+    return lambdaoutput
+	
+	
