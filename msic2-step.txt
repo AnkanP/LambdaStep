@@ -23,13 +23,25 @@
           "BackoffRate": 2
         }
       ],
-      "Next": "Map",
+      "Next": "Choice",
       "InputPath": "$",
       "ResultPath": "$.lambdacalcresult",
       "ResultSelector": {
-        "partitionDaysArray.$": "$.Payload",
+        "body.$": "$.Payload",
         "status.$": "$.StatusCode"
       }
+    },
+    "Choice": {
+      "Type": "Choice",
+      "Choices": [
+        {
+          "Not": {
+            "Variable": "$.lambdacalcresult.body.lastexecutionstatus",
+            "StringMatches": "RUNNING"
+          },
+          "Next": "Map"
+        }
+      ]
     },
     "Map": {
       "Type": "Map",
@@ -72,7 +84,7 @@
       "InputPath": "$",
       "ResultPath": "$.mapresult",
       "End": true,
-      "ItemsPath": "$.lambdacalcresult.partitionDaysArray",
+      "ItemsPath": "$.lambdacalcresult.body.datearray",
       "OutputPath": "$"
     }
   }

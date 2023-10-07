@@ -20,6 +20,10 @@ def lambda_handler(event, context):
 
     delta = end_date - start_date   # returns timedelta
 
+    y = {
+        "lastexecutionstatus" : "RUNNING"
+    }
+
     for i in range(delta.days + 1):
         day = start_date + timedelta(days=i)
       
@@ -29,9 +33,11 @@ def lambda_handler(event, context):
         }
         json_data_list.append(json.dumps(x))
 
-    print(json.dumps(json_data_list))
+    
+    y['datearray'] = json_data_list
+    
 
-    return json_data_list
+    return y
 
 
 
